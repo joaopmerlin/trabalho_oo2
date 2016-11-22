@@ -4,6 +4,8 @@ import br.com.utfpr.pb.enumeration.TipoConta;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
@@ -36,6 +38,7 @@ public class Conta implements Model {
     private Pessoa pessoa;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Pedido pedido;
 
     @Enumerated(EnumType.STRING)
@@ -52,9 +55,7 @@ public class Conta implements Model {
     @NotNull
     private Date emissao;
 
-    @Column(nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    @NotNull
     private Date vencimento;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, mappedBy = "conta")
@@ -76,7 +77,7 @@ public class Conta implements Model {
 
     public Double getSaldo() {
         if (baixas == null || baixas.isEmpty()) {
-            return 0D;
+            return valor;
         }
         return valor - baixas.stream().mapToDouble(ContaBaixa::getValor).sum();
     }

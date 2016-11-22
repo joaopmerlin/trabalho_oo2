@@ -5,31 +5,30 @@
  */
 package br.com.utfpr.pb.view;
 
-import br.com.utfpr.pb.controller.CategoriaController;
 import br.com.utfpr.pb.controller.ClienteController;
 import br.com.utfpr.pb.controller.ContaController;
 import br.com.utfpr.pb.controller.FornecedorController;
-import br.com.utfpr.pb.controller.PessoaController;
-import br.com.utfpr.pb.controller.UsuarioController;
 import br.com.utfpr.pb.enumeration.TipoConta;
-import br.com.utfpr.pb.model.Categoria;
 import br.com.utfpr.pb.model.Conta;
-import br.com.utfpr.pb.model.Usuario;
+import br.com.utfpr.pb.model.ContaBaixa;
+import br.com.utfpr.pb.model.Pessoa;
 import br.com.utfpr.pb.util.DateUtil;
 import br.com.utfpr.pb.util.DoubleUtil;
-import br.com.utfpr.pb.util.EncryptPasswordUtil;
 import br.com.utfpr.pb.util.ValidationUtil;
-import java.util.Date;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import javax.validation.ConstraintViolationException;
+import java.util.Date;
 
 /**
  * @author Joao
  */
 public class ContaView extends javax.swing.JDialog {
 
+    private DefaultTableModel model;
     private Conta conta = new Conta();
+    private ContaBaixa baixaSelecionada;
     private ContaController controller = ContaController.getInstance();
     private ClienteController clienteController = ClienteController.getInstance();
     private FornecedorController fornecedorController = FornecedorController.getInstance();
@@ -64,28 +63,108 @@ public class ContaView extends javax.swing.JDialog {
 
     }
 
-    public Conta getConta(){
+    private void openModal() {
+        ContaBaixaView baixaView = new ContaBaixaView(null, true);
+        baixaView.setBaixa(getSelecionado());
+        baixaView.setVisible(true);
+
+        baixaSelecionada = baixaView.getBaixa();
+        initTable();
+    }
+
+    private ContaBaixa getSelecionado() {
+        if (jTable.getSelectedRowCount() > 0) {
+            int idx = jTable.getSelectedRow();
+            baixaSelecionada = conta.getBaixas().get(idx);
+            return baixaSelecionada;
+        }
+        ContaBaixa baixa = new ContaBaixa();
+        baixa.setConta(conta);
+        baixa.setData(new Date());
+        baixaSelecionada = baixa;
+        conta.addBaixa(baixa);
+        return baixaSelecionada;
+    }
+
+    private void tableEvent() {
+        if (jTable.getSelectedRowCount() > 0) {
+            jButtonAlterar.setEnabled(true);
+            jButtonExcluir.setEnabled(true);
+        } else {
+            jButtonAlterar.setEnabled(false);
+            jButtonExcluir.setEnabled(false);
+        }
+    }
+
+    private void add(ContaBaixa baixa) {
+        Object[] vetor = new Object[3];
+        vetor[0] = baixa.getId();
+        vetor[1] = dateUtil.format(baixa.getData());
+        vetor[2] = doubleUtil.format(baixa.getValor());
+        model.addRow(vetor);
+    }
+
+    public Conta getConta() {
+        conta.setDescricao(descricao.getText());
+        conta.setPessoa((Pessoa) pessoa.getSelectedItem());
+        conta.setValor(doubleUtil.getDouble(valor.getText()));
+        conta.setVencimento(vencimento.getDate());
+
+        if (conta.getId() == null) {
+            conta.setEmissao(new Date());
+        }
 
         return conta;
     }
 
     public void setConta(Conta conta) {
-        if (conta.getTipoConta().equals(TipoConta.RECEBER)){
+        this.conta = conta;
+
+        if (conta.getTipoConta().equals(TipoConta.RECEBER)) {
             pessoa.setModel(new DefaultComboBoxModel(clienteController.findAll().toArray()));
         } else {
             pessoa.setModel(new DefaultComboBoxModel(fornecedorController.findAll().toArray()));
         }
-        
+
         if (conta.getId() != null) {
-            this.conta = conta;
             id.setText(conta.getId().toString());
             descricao.setText(conta.getDescricao());
             pessoa.setSelectedItem(conta.getPessoa());
             valor.setText(doubleUtil.format(conta.getValor()));
             vencimento.setDate(conta.getVencimento());
+
+            initTable();
+
         } else {
             valor.setText("0,00");
             vencimento.setDate(new Date());
+        }
+    }
+
+    private void initTable() {
+        model = (DefaultTableModel) jTable.getModel();
+        model.getDataVector().removeAllElements();
+        model.fireTableDataChanged();
+        if (conta.getBaixas() != null) {
+            conta.getBaixas().forEach(item -> add(item));
+        }
+        model.fireTableDataChanged();
+
+        saldo.setText(doubleUtil.format(conta.getSaldo()));
+
+        tableEvent();
+    }
+
+    private void excluir() {
+        if (JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir?") == 0) {
+            try {
+                int idx = jTable.getSelectedRow();
+                conta.getBaixas().remove(idx);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Ocorreu um problema ao excluir.\n\n" + e.getMessage());
+            }
+            initTable();
         }
     }
 
@@ -109,6 +188,8 @@ public class ContaView extends javax.swing.JDialog {
         vencimento = new org.jdesktop.swingx.JXDatePicker();
         jLabel5 = new javax.swing.JLabel();
         descricao = new javax.swing.JTextField();
+        saldo = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jButtonCancelar = new javax.swing.JButton();
         jButtonSalvar = new javax.swing.JButton();
@@ -139,6 +220,12 @@ public class ContaView extends javax.swing.JDialog {
 
         jLabel5.setText("Descrição *");
 
+        saldo.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        saldo.setText("0,00");
+
+        jLabel7.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel7.setText("Saldo");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -154,20 +241,29 @@ public class ContaView extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(id, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(vencimento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-                        .addComponent(valor, javax.swing.GroupLayout.Alignment.LEADING))
                     .addComponent(descricao)
-                    .addComponent(pessoa, 0, 360, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(pessoa, 0, 360, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(vencimento, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                        .addComponent(valor, javax.swing.GroupLayout.Alignment.LEADING)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(saldo)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(saldo)
+                        .addComponent(jLabel7)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
@@ -240,15 +336,40 @@ public class ContaView extends javax.swing.JDialog {
                 return canEdit [columnIndex];
             }
         });
+        jTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTableMouseClicked(evt);
+            }
+        });
+        jTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTableKeyReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable);
 
         jButtonNovo.setText("Novo");
+        jButtonNovo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonNovoActionPerformed(evt);
+            }
+        });
 
         jButtonAlterar.setText("Alterar");
         jButtonAlterar.setEnabled(false);
+        jButtonAlterar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonAlterarActionPerformed(evt);
+            }
+        });
 
         jButtonExcluir.setText("Excluir");
         jButtonExcluir.setEnabled(false);
+        jButtonExcluir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonExcluirActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -318,6 +439,36 @@ public class ContaView extends javax.swing.JDialog {
         salvar();
     }//GEN-LAST:event_jButtonSalvarActionPerformed
 
+    private void jButtonNovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonNovoActionPerformed
+        // TODO add your handling code here:
+        openModal();
+    }//GEN-LAST:event_jButtonNovoActionPerformed
+
+    private void jTableKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTableKeyReleased
+        // TODO add your handling code here:
+        tableEvent();
+    }//GEN-LAST:event_jTableKeyReleased
+
+    private void jTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTableMouseClicked
+        // TODO add your handling code here:
+        tableEvent();
+        if (evt.getClickCount() == 2 && !evt.isConsumed()) {
+            evt.consume();
+            //handle double click event.
+            openModal();
+        }
+    }//GEN-LAST:event_jTableMouseClicked
+
+    private void jButtonAlterarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAlterarActionPerformed
+        // TODO add your handling code here:
+        openModal();
+    }//GEN-LAST:event_jButtonAlterarActionPerformed
+
+    private void jButtonExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExcluirActionPerformed
+        // TODO add your handling code here:
+        excluir();
+    }//GEN-LAST:event_jButtonExcluirActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField descricao;
     private javax.swing.JTextField id;
@@ -331,12 +482,14 @@ public class ContaView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable;
     private javax.swing.JComboBox<String> pessoa;
+    private javax.swing.JLabel saldo;
     private javax.swing.JFormattedTextField valor;
     private org.jdesktop.swingx.JXDatePicker vencimento;
     // End of variables declaration//GEN-END:variables

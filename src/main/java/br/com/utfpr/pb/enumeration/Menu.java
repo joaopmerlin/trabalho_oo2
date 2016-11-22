@@ -14,9 +14,9 @@ public enum Menu {
     PEDIDO_COMPRA("pedidos", "PedidoCompraView", "Pedido de Compra", "pedidoCompra.png"),
     PEDIDO_VENDA("pedidos", "PedidoVendaView", "Pedido de Venda", "pedidoVenda.png"),
 
-    CONTA_RECEBER("financeiro", "ContaReceberView", "Contas a Receber", "pedidoVenda.png"),
-    CONTA_PAGAR("financeiro", "ContaPagarView", "Contas a Pagar", "pedidoVenda.png"),
-    CONTA_CAIXA("financeiro", "CaixaView", "Lançamentos", "pedidoVenda.png"),
+    CAIXA("financeiro", "CaixasView", "Lançamentos", "caixa.png"),
+    CONTA_RECEBER("financeiro", "ContaReceberView", "Contas a Receber", "contaReceber.png"),
+    CONTA_PAGAR("financeiro", "ContaPagarView", "Contas a Pagar", "contaPagar.png"),
 
     REL_PEDIDOS("relatorios", "RelatorioPedidosView", "Relatório de Pedidos", "relatorioPedido.png"),
     REL_ESTOQUE("relatorios", "RelatorioEstoqueView", "Relatório de Estoque", "relatorioEstoque.png");

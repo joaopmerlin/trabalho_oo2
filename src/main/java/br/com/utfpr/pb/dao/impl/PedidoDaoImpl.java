@@ -32,11 +32,12 @@ public class PedidoDaoImpl extends AbstractDaoImpl<Pedido, Long> implements Pedi
         conta.setPedido(pedido);
         conta.setEmissao(new Date());
         conta.setValor(pedido.getTotal());
-        conta.setVencimento(new Date());
         if (pedido.getTipoPedido().equals(TipoPedido.VENDA)) {
             conta.setTipoConta(TipoConta.RECEBER);
+            conta.setDescricao("Conta a receber referente ao pedido " + pedido.getId());
         } else {
             conta.setTipoConta(TipoConta.PAGAR);
+            conta.setDescricao("Conta a pagar referente ao pedido " + pedido.getId());
         }
         contaDao.save(conta);
     }

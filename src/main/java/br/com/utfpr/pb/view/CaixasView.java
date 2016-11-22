@@ -5,10 +5,12 @@
  */
 package br.com.utfpr.pb.view;
 
+import br.com.utfpr.pb.controller.CaixaController;
 import br.com.utfpr.pb.controller.CategoriaController;
 import br.com.utfpr.pb.controller.ContaController;
 import br.com.utfpr.pb.controller.UsuarioController;
 import br.com.utfpr.pb.enumeration.TipoConta;
+import br.com.utfpr.pb.model.Caixa;
 import br.com.utfpr.pb.model.Categoria;
 import br.com.utfpr.pb.model.Conta;
 import br.com.utfpr.pb.model.Usuario;
@@ -24,20 +26,20 @@ import java.util.List;
 /**
  * @author João
  */
-public class ContaReceberView extends javax.swing.JInternalFrame {
+public class CaixasView extends javax.swing.JInternalFrame {
 
     private DefaultTableModel model;
-    private ContaController controller;
-    private List<Conta> data;
+    private CaixaController controller;
+    private List<Caixa> data;
     private DateUtil dateUtil;
     private DoubleUtil doubleUtil;
 
     /**
      * Creates new form UsuariosView
      */
-    public ContaReceberView() {
+    public CaixasView() {
         try {
-            controller = ContaController.getInstance();
+            controller = CaixaController.getInstance();
             dateUtil = DateUtil.getInstance();
             doubleUtil = DoubleUtil.getInstance();
 
@@ -60,7 +62,7 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
     }
 
     private void initTable() {
-        data = controller.findByTipoConta(TipoConta.RECEBER);
+        data = controller.findAll();
 
         model = (DefaultTableModel) jTable.getModel();
         model.getDataVector().removeAllElements();
@@ -68,8 +70,6 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         data.forEach(item -> add(item));
         model.fireTableDataChanged();
         
-        totalSaldo.setText(doubleUtil.format(data.stream().mapToDouble(Conta::getSaldo).sum()));
-
         tableEvent();
     }
 
@@ -83,21 +83,20 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         }
     }
 
-    private void add(Conta conta) {
-        Object[] vetor = new Object[6];
-        vetor[0] = conta.getId();
-        vetor[1] = conta.getDescricao();
-        vetor[2] = conta.getPessoa().getNome();
-        vetor[3] = conta.getVencimento() != null ? dateUtil.format(conta.getVencimento()) : null;
-        vetor[4] = doubleUtil.format(conta.getValor());
-        vetor[5] = doubleUtil.format(conta.getSaldo());
+    private void add(Caixa caixa) {
+        Object[] vetor = new Object[5];
+        vetor[0] = caixa.getId();
+        vetor[1] = caixa.getDescricao();
+        vetor[2] = dateUtil.format(caixa.getData());
+        vetor[3] = caixa.getCreditoDebito();
+        vetor[4] = doubleUtil.format(caixa.getValor());
         model.addRow(vetor);
     }
 
     private void openModal() {
-        ContaView contaView = new ContaView(null, true);
-        contaView.setConta(getSelecionado());
-        contaView.setVisible(true);
+        CaixaView caixaView = new CaixaView(null, true);
+        caixaView.setCaixa(getSelecionado());
+        caixaView.setVisible(true);
 
         initTable();
     }
@@ -114,14 +113,12 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         }
     }
 
-    private Conta getSelecionado() {
+    private Caixa getSelecionado() {
         if (jTable.getSelectedRowCount() > 0) {
             Object value = model.getValueAt(jTable.getSelectedRow(), 0);
             return controller.find(Long.parseLong(value.toString()));
         }
-        Conta conta = new Conta();
-        conta.setTipoConta(TipoConta.RECEBER);
-        return conta;
+        return null;
     }
 
     private void pesquisa() {
@@ -130,9 +127,7 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         model.getDataVector().removeAllElements();
         model.fireTableDataChanged();
         data.stream()
-                .filter(e -> naoQuitadas.isSelected() ? e.getSaldo() > 0 : true)
                 .filter(e -> StringUtils.containsIgnoreCase(e.getId().toString(), query) ||
-                        StringUtils.containsIgnoreCase(e.getPessoa().getNome(), query) ||
                         StringUtils.containsIgnoreCase(e.getDescricao(), query))
                 .forEach(item -> add(item));
      
@@ -156,16 +151,13 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable = new javax.swing.JTable();
-        totalSaldo = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         pesquisa = new javax.swing.JTextField();
-        naoQuitadas = new javax.swing.JCheckBox();
 
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
-        setTitle("Contas a Receber");
+        setTitle("Lançamentos");
 
         jButtonFechar.setText("Fechar");
         jButtonFechar.addActionListener(new java.awt.event.ActionListener() {
@@ -231,11 +223,11 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
 
             },
             new String [] {
-                "Id", "Descrição", "Pessoa", "Vencimento", "Valor", "Saldo"
+                "Id", "Descrição", "Data", "Credito / Débito", "Valor"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -254,35 +246,20 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         });
         jScrollPane1.setViewportView(jTable);
 
-        totalSaldo.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        totalSaldo.setText("0,00");
-
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        jLabel2.setText("Total em aberto");
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 897, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(totalSaldo)))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 897, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(totalSaldo)
-                    .addComponent(jLabel2)))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Pesquisa"));
@@ -293,14 +270,6 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
             }
         });
 
-        naoQuitadas.setSelected(true);
-        naoQuitadas.setText("Somente em aberto");
-        naoQuitadas.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                naoQuitadasItemStateChanged(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -308,17 +277,13 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(pesquisa, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(naoQuitadas)
-                .addContainerGap())
+                .addContainerGap(607, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pesquisa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(naoQuitadas))
+                .addComponent(pesquisa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -389,25 +354,17 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         pesquisa();
     }//GEN-LAST:event_pesquisaKeyReleased
 
-    private void naoQuitadasItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_naoQuitadasItemStateChanged
-        // TODO add your handling code here:
-        pesquisa();
-    }//GEN-LAST:event_naoQuitadasItemStateChanged
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAlterar;
     private javax.swing.JButton jButtonExcluir;
     private javax.swing.JButton jButtonFechar;
     private javax.swing.JButton jButtonNovo;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable;
-    private javax.swing.JCheckBox naoQuitadas;
     private javax.swing.JTextField pesquisa;
-    private javax.swing.JLabel totalSaldo;
     // End of variables declaration//GEN-END:variables
 }

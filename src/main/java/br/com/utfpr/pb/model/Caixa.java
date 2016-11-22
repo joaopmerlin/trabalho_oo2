@@ -1,5 +1,6 @@
 package br.com.utfpr.pb.model;
 
+import br.com.utfpr.pb.enumeration.CreditoDebito;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,14 +26,21 @@ public class Caixa implements Model {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    @NotEmpty(message = "Campo 'Descrição' é obrigatório")
+    private String descricao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull(message = "Campo 'Crédito / Débito' é obrigatório")
+    private CreditoDebito creditoDebito;
+
     @ManyToOne
-    @JoinColumn(nullable = false)
-    @NotNull
     @OnDelete(action = OnDeleteAction.CASCADE)
     private ContaBaixa baixa;
 
     @Column(nullable = false)
-    @NotEmpty
+    @NotNull(message = "Campo 'Valor' é obrigatório")
     private Double valor;
 
     @Column(nullable = false)

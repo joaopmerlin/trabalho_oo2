@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * @author João
  */
-public class ContaReceberView extends javax.swing.JInternalFrame {
+public class ContaPagarView extends javax.swing.JInternalFrame {
 
     private DefaultTableModel model;
     private ContaController controller;
@@ -35,7 +35,7 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
     /**
      * Creates new form UsuariosView
      */
-    public ContaReceberView() {
+    public ContaPagarView() {
         try {
             controller = ContaController.getInstance();
             dateUtil = DateUtil.getInstance();
@@ -60,7 +60,7 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
     }
 
     private void initTable() {
-        data = controller.findByTipoConta(TipoConta.RECEBER);
+        data = controller.findByTipoConta(TipoConta.PAGAR);
 
         model = (DefaultTableModel) jTable.getModel();
         model.getDataVector().removeAllElements();
@@ -120,7 +120,7 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
             return controller.find(Long.parseLong(value.toString()));
         }
         Conta conta = new Conta();
-        conta.setTipoConta(TipoConta.RECEBER);
+        conta.setTipoConta(TipoConta.PAGAR);
         return conta;
     }
 
@@ -165,7 +165,7 @@ public class ContaReceberView extends javax.swing.JInternalFrame {
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
-        setTitle("Contas a Receber");
+        setTitle("Contas a Pagar");
 
         jButtonFechar.setText("Fechar");
         jButtonFechar.addActionListener(new java.awt.event.ActionListener() {

@@ -3,6 +3,7 @@ package br.com.utfpr.pb.dao.impl;
 import br.com.utfpr.pb.config.DatabaseConnection;
 import br.com.utfpr.pb.dao.CaixaDao;
 import br.com.utfpr.pb.dao.ContaDao;
+import br.com.utfpr.pb.enumeration.CreditoDebito;
 import br.com.utfpr.pb.enumeration.TipoConta;
 import br.com.utfpr.pb.model.Caixa;
 import br.com.utfpr.pb.model.Conta;
@@ -25,10 +26,24 @@ public class ContaDaoImpl extends AbstractDaoImpl<Conta, Long> implements ContaD
 
         if (conta.getBaixas() != null && !conta.getBaixas().isEmpty()) {
             conta.getBaixas().forEach(baixa -> {
-                Caixa caixa = new Caixa();
-                caixa.setBaixa(baixa);
-                caixa.setData(new Date());
-                caixa.setValor(baixa.getValor());
+                Caixa caixa = caixaDao.findByContaBaixa(baixa);
+
+                if (caixa == null) {
+                    caixa = new Caixa();
+                    caixa.setBaixa(baixa);
+                    caixa.setData(new Date());
+                    caixa.setValor(baixa.getValor());
+                    if (baixa.getConta().getTipoConta().equals(TipoConta.RECEBER)){
+                        caixa.setDescricao("Recebimento título n. " + baixa.getConta().getId());
+                        caixa.setCreditoDebito(CreditoDebito.C);
+                    } else {
+                        caixa.setDescricao("Pagamento título n. " + baixa.getConta().getId());
+                        caixa.setCreditoDebito(CreditoDebito.D);
+                    }
+                } else {
+                    caixa.setValor(baixa.getValor());
+                }
+
                 caixaDao.save(caixa);
             });
         }
