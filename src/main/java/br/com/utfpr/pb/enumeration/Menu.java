@@ -18,8 +18,9 @@ public enum Menu {
     CONTA_RECEBER("financeiro", "ContaReceberView", "Contas a Receber", "contaReceber.png"),
     CONTA_PAGAR("financeiro", "ContaPagarView", "Contas a Pagar", "contaPagar.png"),
 
-    REL_PEDIDOS("relatorios", "RelatorioPedidosView", "Relatório de Pedidos", "relatorioPedido.png"),
-    REL_ESTOQUE("relatorios", "RelatorioEstoqueView", "Relatório de Estoque", "relatorioEstoque.png");
+    REL_PEDIDOS("relatorios", "RelatorioPedidosView", "Pedidos", "relatorioPedido.png"),
+    REL_ESTOQUE("relatorios", "RelatorioEstoqueView", "Estoque", "relatorioEstoque.png"),
+    REL_CONTAS("relatorios", "RelatorioContasView", "Contas", "relatorioEstoque.png");
 
     private String task;
     private String descricao;

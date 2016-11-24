@@ -60,8 +60,10 @@ public class PrincipalView extends javax.swing.JFrame {
                 taskPanePedidos.add(action);
             } else if (menu.getTask().equals("financeiro")) {
                 taskPaneFinanceiro.add(action);
+            } else if (menu.getTask().equals("relatorios")) {
+                jMenuRelatorios.add(new JMenuItem(action));
             } else {
-                taskPaneRelatorios.add(action);
+                jMenuGraficos.add(new JMenuItem(action));
             }
         }
     }
@@ -80,11 +82,12 @@ public class PrincipalView extends javax.swing.JFrame {
         taskPaneCadastros = new org.jdesktop.swingx.JXTaskPane();
         taskPanePedidos = new org.jdesktop.swingx.JXTaskPane();
         taskPaneFinanceiro = new org.jdesktop.swingx.JXTaskPane();
-        taskPaneRelatorios = new org.jdesktop.swingx.JXTaskPane();
         jDesktopPane = new javax.swing.JDesktopPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenuSair = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuRelatorios = new javax.swing.JMenu();
+        jMenuGraficos = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -107,9 +110,6 @@ public class PrincipalView extends javax.swing.JFrame {
 
         taskPaneFinanceiro.setTitle("Financeiro");
         jXTaskPaneContainer1.add(taskPaneFinanceiro);
-
-        taskPaneRelatorios.setTitle("Relatórios");
-        jXTaskPaneContainer1.add(taskPaneRelatorios);
 
         jDesktopPane.setBackground(new java.awt.Color(240, 240, 240));
 
@@ -135,6 +135,12 @@ public class PrincipalView extends javax.swing.JFrame {
         jMenuSair.add(jMenuItem1);
 
         jMenuBar1.add(jMenuSair);
+
+        jMenuRelatorios.setText("Relatórios");
+        jMenuBar1.add(jMenuRelatorios);
+
+        jMenuGraficos.setText("Gráficos");
+        jMenuBar1.add(jMenuGraficos);
 
         setJMenuBar(jMenuBar1);
 
@@ -168,13 +174,14 @@ public class PrincipalView extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public static javax.swing.JDesktopPane jDesktopPane;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenu jMenuGraficos;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenu jMenuRelatorios;
     private javax.swing.JMenu jMenuSair;
     private org.jdesktop.swingx.JXTaskPaneContainer jXTaskPaneContainer1;
     private javax.swing.JLabel labelUsuario;
     private org.jdesktop.swingx.JXTaskPane taskPaneCadastros;
     private org.jdesktop.swingx.JXTaskPane taskPaneFinanceiro;
     private org.jdesktop.swingx.JXTaskPane taskPanePedidos;
-    private org.jdesktop.swingx.JXTaskPane taskPaneRelatorios;
     // End of variables declaration//GEN-END:variables
 }

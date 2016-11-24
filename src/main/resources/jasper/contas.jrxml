@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contas" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="cf83967b-229d-4b44-99f8-b992964f485e">
+	<property name="ireport.zoom" value="1.4641000000000006"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="pessoa" class="java.lang.Long">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dataIni" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dataFim" class="java.util.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pendente" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT CONTA.ID,
+CONTA.DESCRICAO,
+CONTA.EMISSAO,
+CONTA.VENCIMENTO,
+CONTA.VALOR TOTAL,
+PESSOA.NOME,
+(SELECT SUM(SUB.VALOR)
+	FROM CONTABAIXA SUB
+	WHERE SUB.CONTA_ID = CONTA.ID
+) VALORPAGO,
+CONTA.VALOR -
+(SELECT SUM(SUB.VALOR)
+	FROM CONTABAIXA SUB
+	WHERE SUB.CONTA_ID = CONTA.ID
+) SALDO,
+CASE WHEN
+(SELECT SUM(SUB.VALOR)
+	FROM CONTABAIXA SUB
+	WHERE SUB.CONTA_ID = CONTA.ID
+) > CONTA.VALOR THEN 'PAGO'
+ELSE 'ABERTO' END,
+CONTABAIXA.DATA,
+CONTABAIXA.VALOR
+
+FROM CONTA
+
+INNER JOIN CONTABAIXA
+ON CONTABAIXA.CONTA_ID = CONTA.ID
+
+INNER JOIN PESSOA
+ON PESSOA.ID = CONTA.PESSOA_ID
+
+WHERE PESSOA.ID = $P{pessoa}
+AND CONTA.EMISSAO BETWEEN $P{dataIni} AND $P{dataFim}
+
+/*SE PASSAR 1 PEGA SOMENTE EM ABERTO*/
+AND (0=$P{pendente} OR (CONTA.VALOR -
+(SELECT SUM(SUB.VALOR)
+	FROM CONTABAIXA SUB
+	WHERE SUB.CONTA_ID = CONTA.ID
+)) > 0)]]>
+	</queryString>
+	<field name="id" class="java.lang.Long"/>
+	<field name="descricao" class="java.lang.String"/>
+	<field name="emissao" class="java.sql.Timestamp"/>
+	<field name="vencimento" class="java.sql.Timestamp"/>
+	<field name="total" class="java.lang.Double"/>
+	<field name="nome" class="java.lang.String"/>
+	<field name="valorpago" class="java.lang.Double"/>
+	<field name="saldo" class="java.lang.Double"/>
+	<field name="case" class="java.lang.String"/>
+	<field name="data" class="java.sql.Timestamp"/>
+	<field name="valor" class="java.lang.Double"/>
+	<group name="conta">
+		<groupExpression><![CDATA[$F{id}]]></groupExpression>
+		<groupHeader>
+			<band height="103">
+				<textField>
+					<reportElement x="60" y="2" width="455" height="20" uuid="6b741e82-1f08-48c0-b7ef-bf4b348fd06a"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{descricao}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="2" width="57" height="20" uuid="275bd6bb-25b9-484d-a536-e88fba76fefc"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Descrição]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="22" width="57" height="20" uuid="53e61aa8-8e96-42b1-865e-07d609168f98"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Pessoa]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="42" width="57" height="20" uuid="2d822d44-7d57-4e5e-8e22-08a6e5b24a18"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Emissão]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="160" y="42" width="62" height="20" uuid="406b1dc2-7871-4ff7-9590-b9dab6191c4d"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Vencimento]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="62" width="57" height="20" uuid="10de30a9-f4cd-457f-a260-c1817b759315"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Valor total]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="160" y="62" width="62" height="20" uuid="f976f1d4-721f-4d6a-894c-2d3097f2a1bf"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Valor Pago]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="348" y="62" width="32" height="20" uuid="794551fc-f391-4ab8-816c-bbc1c47dcd81"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[Saldo]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="60" y="22" width="455" height="20" uuid="228ce0bf-504f-45e7-8761-abd81c2f5d49"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="60" y="42" width="100" height="20" uuid="682a22c7-e967-4fee-b2fb-cb8b483a5ea6"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{emissao}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="222" y="42" width="100" height="20" uuid="09b16e1e-8838-436e-8611-b58406ce3f4b"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{vencimento}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement x="60" y="62" width="100" height="20" uuid="ad6fab7c-d3f5-4580-bdc2-0582bb87d267"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement x="222" y="62" width="100" height="20" uuid="35c460e8-971b-4165-9fe2-2b40cbf715cd"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{valorpago}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement x="380" y="62" width="100" height="20" uuid="1609146e-0ce5-4182-998e-46606e07c5d7"/>
+					<textElement verticalAlignment="Middle"/>
+					<textFieldExpression><![CDATA[$F{saldo}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="82" width="555" height="1" uuid="64a4e872-288a-402c-9e35-d003f6923670"/>
+					<graphicElement>
+						<pen lineStyle="Dashed"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement x="0" y="83" width="100" height="20" uuid="c7eac523-d98e-45d8-b7ab-503c88675fc2"/>
+					<textElement verticalAlignment="Middle">
+						<font isItalic="true"/>
+					</textElement>
+					<text><![CDATA[Pagamentos]]></text>
+				</staticText>
+				<line>
+					<reportElement x="0" y="0" width="555" height="1" uuid="84c043a2-6fe6-4c47-945b-1619ebca6a83"/>
+				</line>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="1">
+				<line>
+					<reportElement x="0" y="0" width="555" height="1" uuid="174a5e9c-5397-4010-9d99-baa7a492eab1"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="20" uuid="e26ba851-b8b2-4241-a1fd-682d41e0fa88"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Relatório de Contas]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="80" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="20" width="71" height="20" uuid="ed2ac8ef-dec4-46cb-b800-a0242e3d413a"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<text><![CDATA[Data Inicial: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="71" height="20" uuid="cb005809-9160-40d2-a7df-b8a074b8a7e9"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<text><![CDATA[Pessoa: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="40" width="71" height="20" uuid="8aef2e5d-f31a-4ea9-ba7c-686901dd32a2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<text><![CDATA[Data Final: ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="71" y="0" width="272" height="20" uuid="a0b7fd15-9f27-45a8-bf16-7e98ef5a2545"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="71" y="40" width="272" height="20" uuid="013628cc-2dde-425e-b228-bd7f17867259"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{dataFim}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="71" y="20" width="272" height="20" uuid="24deda63-d037-4932-9127-f663252263ee"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{dataIni}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="355" y="0" width="100" height="20" uuid="d60da664-b37b-4b49-af20-a293958098d7"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{data}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="455" y="0" width="100" height="20" uuid="9cb21d42-da94-46af-b004-6f0429774fc1"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{valor}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20">
+			<textField>
+				<reportElement x="435" y="0" width="80" height="20" uuid="6d081bde-6a23-4c38-ad47-f90474caf9f4"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="515" y="0" width="40" height="20" uuid="4ff7e582-f754-41b3-9207-6f882015d514"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="0" y="0" width="136" height="20" uuid="a0b2c7d7-766f-4af7-b0c1-3555372df480"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>
