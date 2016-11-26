@@ -20,7 +20,13 @@ public enum Menu {
 
     REL_PEDIDOS("relatorios", "RelatorioPedidosView", "Pedidos", "relatorioPedido.png"),
     REL_ESTOQUE("relatorios", "RelatorioEstoqueView", "Estoque", "relatorioEstoque.png"),
-    REL_CONTAS("relatorios", "RelatorioContasView", "Contas", "relatorioEstoque.png");
+    REL_CONTAS("relatorios", "RelatorioContasView", "Contas", "relatorioEstoque.png"),
+    REL_CAIXA("relatorios", "RelatorioCaixaView", "Caixa", "relatorioEstoque.png"),
+    REL_PRODUTOS_MAIS_VENDIDOS("relatorios", "RelatorioProdutosMaisVendidosView", "Produtos mais Vendidos", "relatorioEstoque.png"),
+
+    CHART_PRODUTOS_MAIS_VENDIDOS("graficos", "GraficoProdutosMaisVendidosView", "Produtos mais Vendidos / Comprados", "relatorioEstoque.png"),
+    CHART_QUANTIDADE_VENDAS("graficos", "GraficoQuantidadeVendasView", "Número de Vendas / Compras", "relatorioEstoque.png"),
+    CHART_TOTAL_VENDAS("graficos", "GraficoTotalVendasView", "Valor Total de Vendas / Compras", "relatorioEstoque.png");
 
     private String task;
     private String descricao;

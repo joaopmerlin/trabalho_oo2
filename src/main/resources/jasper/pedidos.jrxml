@@ -157,7 +157,7 @@ AND PEDIDO.EMISSAO BETWEEN $P{dataIni} AND $P{dataFim}]]>
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="52" splitType="Stretch">
+		<band height="20" splitType="Stretch">
 			<staticText>
 				<reportElement x="0" y="0" width="255" height="20" uuid="abc3186f-2e05-4362-9ce4-64e9bb9968b6"/>
 				<textElement verticalAlignment="Middle">

@@ -52,11 +52,13 @@ public class AbstractDaoImpl<T extends Model, ID extends Serializable> implement
 
     @Override
     public T find(ID id) {
+        em.clear();
         return em.find(persistedClass, id);
     }
 
     @Override
     public List<T> findAll() {
+        em.clear();
         return em.createQuery("from " + persistedClass.getName()).getResultList();
     }
 
